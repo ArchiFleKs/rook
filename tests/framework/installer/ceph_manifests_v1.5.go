@@ -336,7 +336,7 @@ spec:
     active: ` + strconv.Itoa(count)
 }
 
-func (m *CephManifestsV1_5) GetObjectStore(name string, replicaCount, port int) string {
+func (m *CephManifestsV1_5) GetObjectStore(name string, replicaCount, port int, tlsEnable bool) string {
 	return `apiVersion: ceph.rook.io/v1
 kind: CephObjectStore
 metadata:
@@ -353,7 +353,6 @@ spec:
       size: 1
       requireSafeReplicaSize: false
   gateway:
-    type: s3
     sslCertificateRef:
     port: ` + strconv.Itoa(port) + `
     instances: ` + strconv.Itoa(replicaCount) + `

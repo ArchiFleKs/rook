@@ -23,7 +23,6 @@ import (
 	"github.com/coreos/pkg/capnslog"
 	"github.com/pkg/errors"
 	cephv1 "github.com/rook/rook/pkg/apis/ceph.rook.io/v1"
-	rookv1 "github.com/rook/rook/pkg/apis/rook.io/v1"
 	"github.com/rook/rook/pkg/client/clientset/versioned/scheme"
 	"github.com/rook/rook/pkg/clusterd"
 	"github.com/rook/rook/pkg/operator/k8sutil"
@@ -54,12 +53,7 @@ func fakeCluster(ns string) *cephv1.CephCluster {
 			Phase: "",
 		},
 		Spec: cephv1.ClusterSpec{
-			Storage: rookv1.StorageScopeSpec{
-				UseAllNodes:            false,
-				Nodes:                  nil,
-				VolumeSources:          nil,
-				StorageClassDeviceSets: nil,
-			},
+			Storage: cephv1.StorageScopeSpec{},
 		},
 	}
 	return cephCluster
@@ -74,7 +68,7 @@ func TestCheckStorageForNode(t *testing.T) {
 	cephCluster.Spec.Storage.UseAllNodes = true
 	assert.True(t, checkStorageForNode(cephCluster))
 
-	fakeNodes := []rookv1.Node{
+	fakeNodes := []cephv1.Node{
 		{
 			Name: "nodeA",
 		},
@@ -82,15 +76,7 @@ func TestCheckStorageForNode(t *testing.T) {
 	cephCluster.Spec.Storage.Nodes = fakeNodes
 	assert.True(t, checkStorageForNode(cephCluster))
 
-	fakeVolumes := []rookv1.VolumeSource{
-		{
-			Name: "volumeA",
-		},
-	}
-	cephCluster.Spec.Storage.VolumeSources = fakeVolumes
-	assert.True(t, checkStorageForNode(cephCluster))
-
-	fakeDeviceSets := []rookv1.StorageClassDeviceSet{
+	fakeDeviceSets := []cephv1.StorageClassDeviceSet{
 		{
 			Name: "DeviceSet1",
 		},
@@ -134,23 +120,17 @@ func TestOnK8sNode(t *testing.T) {
 	}
 
 	// node will reconcile
-	fakeNodes := []rookv1.Node{
+	fakeNodes := []cephv1.Node{
 		{
 			Name: "nodeA",
 		},
 	}
-	fakeVolumes := []rookv1.VolumeSource{
-		{
-			Name: "volumeA",
-		},
-	}
-	fakeDeviceSets := []rookv1.StorageClassDeviceSet{
+	fakeDeviceSets := []cephv1.StorageClassDeviceSet{
 		{
 			Name: "DeviceSet1",
 		},
 	}
 	cephCluster.Spec.Storage.Nodes = fakeNodes
-	cephCluster.Spec.Storage.VolumeSources = fakeVolumes
 	cephCluster.Spec.Storage.StorageClassDeviceSets = fakeDeviceSets
 	cephCluster.Spec.Storage.UseAllNodes = true
 	cephCluster.Status.Phase = k8sutil.ReadyStatus
